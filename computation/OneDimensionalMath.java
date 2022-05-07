@@ -5,8 +5,8 @@ import io.IOManager;
 
 public class OneDimensionalMath {
     private static final String[] stringRepresentation = {
-            "1/x",
-            "sin(x) / x",
+            "1/x",  // функция и ее производные не определены в точке x = 0
+            "sin(x) / x", // функция и ее производные содержат устранимый разрыв в x = 0
             "0.5x^3 + 2x^2 + x + 2",
             "5x",
             "-5x",
@@ -67,22 +67,22 @@ public class OneDimensionalMath {
     }
 
     private double f1( double x ){ return  1/x;}
-    private double f2( double x ){ return  Math.sin(x)/x;}
+    private double f2( double x ){ return  x==0?1D:Math.sin(x)/x;}
     private double f3( double x ){ return  0.5*Math.pow(x,3)+2*Math.pow(x,2)+x+2;}
     private double f4( double x ){ return  5*x;}
     private double f5( double x ){ return  -5*x;}
 
     private double df1( double x ){ return  -1/Math.pow(x,2);}
-    private double df2( double x ){ return  Math.cos(x)/x - Math.sin(x)/Math.pow(x,2);}
+    private double df2( double x ){ return  x==0?0D:Math.cos(x)/x - Math.sin(x)/Math.pow(x,2);}
     private double df3( double x ){ return  1.5*Math.pow(x,2)+4*x+1;}
-    private double df4( double x ){ return  5;}
-    private double df5( double x ){ return  -5;}
+    private double df4( double x ){ return  5D;}
+    private double df5( double x ){ return  -5D;}
 
     private double ddf1( double x ){ return  2/Math.pow(x,3);}
-    private double ddf2( double x ){ return  ( -1*Math.sin(x) - 2*Math.cos(x)/x + 2*Math.sin(x)/Math.pow(x,2) )/x;}
+    private double ddf2( double x ){ return  x==0?-1/3D:( -1*Math.sin(x) - 2*Math.cos(x)/x + 2*Math.sin(x)/Math.pow(x,2) )/x;}
     private double ddf3( double x ){ return  3*x+4;}
-    private double ddf4( double x ){ return  0;}
-    private double ddf5( double x ){ return  0;}
+    private double ddf4( double x ){ return  0D;}
+    private double ddf5( double x ){ return  0D;}
 
     public static String[] getStringRepresentation() {
         return stringRepresentation;

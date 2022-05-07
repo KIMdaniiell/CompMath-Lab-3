@@ -22,7 +22,7 @@ public class IOManager {
     }
 
     public void writeErrorMessage(String message){
-        System.out.println("[Ошибка] " + message);
+        System.out.println("\n[Ошибка] " + message);
     }
 
     public double getDoubleDigit(String message) {
@@ -50,6 +50,7 @@ public class IOManager {
     public int getIntDigit(String message) {
         int value = 0;
         boolean valid = false;
+        System.out.println();
         while (!valid) {
             System.out.print("[Ввод] " +message+": ");
             try {
@@ -71,7 +72,7 @@ public class IOManager {
     public boolean getBooleanDigit(String message) {
         boolean value = false;
         boolean valid = false;
-
+        System.out.println();
         while (!valid) {
             System.out.print("[Ввод] " +message+" (Y/n) ");
             try {
@@ -79,7 +80,11 @@ public class IOManager {
                 if (str.isEmpty()) {
                     value = true;
                 } else {
-                    value = Boolean.parseBoolean(str);
+                    if (str.equals("y") || str.equals("yes")  || str.equals("true") || str.equals("1")) {
+                        value = true;
+                    } else {
+                        value = false;
+                    }
                 }
                 valid = true;
             } catch (Exception e) {
