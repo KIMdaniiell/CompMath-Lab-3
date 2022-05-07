@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+        //TODO - причесать многопоточность
         //TODO - вычисление оптимального числа разбиений
         IOManager console = new IOManager(new Scanner(System.in));
         IntegralCalculator iCalculator = new IntegralCalculator(console);

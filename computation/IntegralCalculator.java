@@ -32,13 +32,45 @@ public class IntegralCalculator {
         }
 
         int partitions = getPartitionsCount(a,b,epsilon,oneDimensionalMath);
-        ResultWrapper midResult = midSquares(a,b,partitions,oneDimensionalMath);
-        ResultWrapper leftResult = leftSquares(a,b,partitions,oneDimensionalMath);
-        ResultWrapper rightResult = rightSquares(a,b,partitions,oneDimensionalMath);
+        final ResultWrapper[] Results = new ResultWrapper[3];
+        double finalA = a;
+        double finalB = b;
+        Runnable rMid = new Runnable() {
+            @Override
+            public void run() {
+                Results[0] = midSquares(finalA, finalB,partitions,oneDimensionalMath);
+            }
+        };
+        Runnable rLeft = new Runnable() {
+            @Override
+            public void run() {
+                Results[1] = leftSquares(finalA, finalB,partitions,oneDimensionalMath);
+            }
+        };
+        Runnable rRight = new Runnable() {
+            @Override
+            public void run() {
+                Results[2] = rightSquares(finalA, finalB,partitions,oneDimensionalMath);
+            }
+        };
+        Thread tMid = new Thread(rMid);
+        Thread tLeft = new Thread(rLeft);
+        Thread tRight = new Thread(rRight);
+        tMid.start();
+        tLeft.start();
+        tRight.start();
+        try {
+            tMid.join();
+            tLeft.join();
+            tRight.join();
+        } catch (InterruptedException e){}
+        //Results[0] = midSquares(a,b,partitions,oneDimensionalMath);
+        //ResultWrapper leftResult = leftSquares(a,b,partitions,oneDimensionalMath);
+        //ResultWrapper rightResult = rightSquares(a,b,partitions,oneDimensionalMath);
 
         ioManager.printTableRow(new String[] {"\nМетод:", "Левых Прямоугольников", "Средних Прямоугольников", "Правых Прямоугольников"});
-        ioManager.printTableRow(new String[] {"Значение интеграла:", leftResult.getResult()+"", midResult.getResult()+"", rightResult.getResult()+""});
-        ioManager.printTableRow(new String[] {"Число разбиений:", leftResult.getPartitions()+"", midResult.getPartitions()+"",rightResult.getPartitions()+""});
+        ioManager.printTableRow(new String[] {"Значение интеграла:", Results[0].getResult()+"", Results[1].getResult()+"", Results[2].getResult()+""});
+        ioManager.printTableRow(new String[] {"Число разбиений:", Results[0].getPartitions()+"", Results[1].getPartitions()+"",Results[2].getPartitions()+""});
     }
 
     private BreakPointKind hasBreakPoints(int functionNumber, double a, double b) {
@@ -100,7 +132,7 @@ public class IntegralCalculator {
     }
 
     private int getPartitionsCount(double a, double b, double epsilon, OneDimensionalMath oneDimensionalMath) {
-        return 100;
+        return 150000;
     }
 
     private int getFunctionNumber() {
