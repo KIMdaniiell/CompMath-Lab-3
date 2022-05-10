@@ -22,40 +22,39 @@ public class IntegralCalculator {
         double epsilon = ioManager.getDoubleDigit("Введите погрешность e");
         this.oneDimensionalMath = new OneDimensionalMath(functionNumber);
 
-        if (hasBreakPoints(functionNumber, a, b) == BreakPointKind.INFINITE){
+        if (oneDimensionalMath.getBreakPointKind(a,b) == BreakPointKind.INFINITE){
             ioManager.writeErrorMessage(String.format("Функция №%d содержит неустранимый разрыв на интервале [%f,%f]",functionNumber,a,b));
             return;
-        } else if (hasBreakPoints(functionNumber, a, b) == BreakPointKind.HOLE) {
+        } else if (oneDimensionalMath.getBreakPointKind(a,b) == BreakPointKind.HOLE) {
             if (!ioManager.getBooleanDigit("Устранить точку разрыва?")){
                 return;
             }
         }
 
-        int partitions = getPartitionsCount(a,b,epsilon,oneDimensionalMath);
+        int midPartitionsNumber = getPartitionsCountMidSquares(a,b,epsilon,oneDimensionalMath);
+        int partitionsNumber = getPartitionsCountSquares(a,b,epsilon,oneDimensionalMath);
         final ResultWrapper[] Results = new ResultWrapper[3];
         double finalA = a;
         double finalB = b;
-        Runnable rMid = new Runnable() {
+
+        Thread tLeft = new Thread(new Runnable() {
             @Override
             public void run() {
-                Results[0] = midSquares(finalA, finalB,partitions,oneDimensionalMath);
+                Results[0] = leftSquares(finalA, finalB,partitionsNumber,oneDimensionalMath);
             }
-        };
-        Runnable rLeft = new Runnable() {
+        });
+        Thread tMid = new Thread(new Runnable() {
             @Override
             public void run() {
-                Results[1] = leftSquares(finalA, finalB,partitions,oneDimensionalMath);
+                Results[1] = midSquares(finalA, finalB,midPartitionsNumber,oneDimensionalMath);
             }
-        };
-        Runnable rRight = new Runnable() {
+        });
+        Thread tRight = new Thread(new Runnable() {
             @Override
             public void run() {
-                Results[2] = rightSquares(finalA, finalB,partitions,oneDimensionalMath);
+                Results[2] = rightSquares(finalA, finalB,partitionsNumber,oneDimensionalMath);
             }
-        };
-        Thread tMid = new Thread(rMid);
-        Thread tLeft = new Thread(rLeft);
-        Thread tRight = new Thread(rRight);
+        });
         tMid.start();
         tLeft.start();
         tRight.start();
@@ -64,36 +63,10 @@ public class IntegralCalculator {
             tLeft.join();
             tRight.join();
         } catch (InterruptedException e){}
-        //Results[0] = midSquares(a,b,partitions,oneDimensionalMath);
-        //ResultWrapper leftResult = leftSquares(a,b,partitions,oneDimensionalMath);
-        //ResultWrapper rightResult = rightSquares(a,b,partitions,oneDimensionalMath);
 
         ioManager.printTableRow(new String[] {"\nМетод:", "Левых Прямоугольников", "Средних Прямоугольников", "Правых Прямоугольников"});
         ioManager.printTableRow(new String[] {"Значение интеграла:", Results[0].getResult()+"", Results[1].getResult()+"", Results[2].getResult()+""});
         ioManager.printTableRow(new String[] {"Число разбиений:", Results[0].getPartitions()+"", Results[1].getPartitions()+"",Results[2].getPartitions()+""});
-    }
-
-    private BreakPointKind hasBreakPoints(int functionNumber, double a, double b) {
-        switch (functionNumber) {
-            case 1:
-                if ((a>0) == (b>0) && (a!=0) && (b!=0)){
-                    return BreakPointKind.CONTINUOUS;
-                }
-                return BreakPointKind.INFINITE;
-            case 2:
-                if ((a>0) == (b>0) && (a!=0) && (b!=0)){
-                    return BreakPointKind.CONTINUOUS;
-                }
-                return BreakPointKind.HOLE;
-            case 3:
-                return BreakPointKind.CONTINUOUS;
-            case 4:
-                return BreakPointKind.CONTINUOUS;
-            case 5:
-                return BreakPointKind.CONTINUOUS;
-            default:
-                return BreakPointKind.CONTINUOUS;
-        }
     }
 
     private ResultWrapper midSquares(double a, double b, int n, OneDimensionalMath oneDimensionalMath) {
@@ -101,8 +74,8 @@ public class IntegralCalculator {
         double width = (b-a)/n;
         for ( int i = 0; i < n; i++) {
             double x = a + width*(i+0.5);
-            double heigth = oneDimensionalMath.f(x);
-            integralValue += heigth * width;
+            double height = oneDimensionalMath.f(x);
+            integralValue += height * width;
         }
         return new ResultWrapper(n, integralValue);
     }
@@ -113,8 +86,8 @@ public class IntegralCalculator {
         double x = a;
         for ( int i = 0; i < n; i++) {
             x = a + width*i;
-            double heigth = oneDimensionalMath.f(x);
-            integralValue += heigth * width;
+            double height = oneDimensionalMath.f(x);
+            integralValue += height * width;
         }
         return new ResultWrapper(n, integralValue);
     }
@@ -125,14 +98,35 @@ public class IntegralCalculator {
         double x = a;
         for ( int i = 0; i < n; i++) {
             x = a + width*(i+1);
-            double heigth = oneDimensionalMath.f(x);
-            integralValue += heigth * width;
+            double height = oneDimensionalMath.f(x);
+            integralValue += height * width;
         }
         return new ResultWrapper(n, integralValue);
     }
 
-    private int getPartitionsCount(double a, double b, double epsilon, OneDimensionalMath oneDimensionalMath) {
-        return 150000;
+    private int getPartitionsCountMidSquares(double a, double b,
+                                             double epsilon, OneDimensionalMath oneDimensionalMath) {
+        int n = 0;
+        double maxF = oneDimensionalMath.getMaxddF(a, b);
+        double error = Double.MAX_VALUE;
+        do {
+            n++;
+            double h = (b-a)/n;
+            error = maxF*n*h*h*h/24;
+        } while (error>epsilon);
+        return n;
+    }
+
+    private int getPartitionsCountSquares(double a, double b, double epsilon, OneDimensionalMath oneDimensionalMath) {
+        int n = 0;
+        double maxf = oneDimensionalMath.getMaxdF(a,b); //TODO
+        double error = Double.MAX_VALUE;
+        do {
+            n++;
+            double h = (b-a)/n;
+            error = maxf*n*h*h/2;
+        } while (error>epsilon);
+        return n;
     }
 
     private int getFunctionNumber() {

@@ -11,14 +11,14 @@ public class OneDimensionalMath {
             "5x",
             "-5x",
     };
-    private int equationNumber;
+    private int functionNumber;
 
     public OneDimensionalMath(int equationNumber){
-        this.equationNumber = equationNumber;
+        this.functionNumber = equationNumber;
     }
 
     public double f(double x) {
-        switch (equationNumber) {
+        switch (functionNumber) {
             case 1:
                 return f1(x);
             case 2:
@@ -34,7 +34,7 @@ public class OneDimensionalMath {
         }
     }
     public double df(double x) {
-        switch (equationNumber) {
+        switch (functionNumber) {
             case 1:
                 return df1(x);
             case 2:
@@ -50,7 +50,7 @@ public class OneDimensionalMath {
         }
     }
     public double ddf(double x) {
-        switch (equationNumber) {
+        switch (functionNumber) {
             case 1:
                 return ddf1(x);
             case 2:
@@ -63,6 +63,82 @@ public class OneDimensionalMath {
                 return ddf5(x);
             default:
                 return 0;
+        }
+    }
+
+    public double getMaxdF(double a, double b){
+        switch (functionNumber) {
+            case 1:
+                if (a>0 && b >0)
+                    return Math.abs(df(a));
+                else
+                    return Math.abs(df(b));
+            case 2:
+                return 0.437;   //0.437 - оценка сверху, максимум не просто вычислить
+            case 3:
+                double left = -2.38742588672279, right = -0.279240779943874, x0 = -4/3; //roots
+                if (a>=right)
+                    return df(b);
+                else if (b<=left)
+                    return df(a);
+
+                else if (a>=left && b<=x0)
+                    return Math.abs(df(b));
+                else if (a>=x0 && b<=right)
+                    return Math.abs(df(a));
+                else if (a>=left && b<=right)
+                    return 5/3D;
+
+                else if (a<=left && b < x0)
+                    return Math.max(Math.abs(df(a)), Math.abs(df(b)));
+                else if (a>=x0 && b >= right) {
+                    return Math.max(Math.abs(df(a)), Math.abs(df(b)));
+                }
+                else return Math.max(Math.abs(df(a)), Math.max(Math.abs(df(b)), 5/3D));
+            case 4:
+                return Math.abs(df(b)); // const
+            case 5:
+                return Math.abs(df(a)); // const
+            default:
+                return 0;
+        }
+    }
+    public double getMaxddF(double a, double b){
+        switch (functionNumber) {
+            case 1:
+                return Math.max(Math.abs(ddf(a)),Math.abs(ddf(b)));
+            case 2:
+                return 0.25; //0.25 - оценка сверху, максимум не просто вычислить
+            case 3:
+                return Math.max(Math.abs(ddf(a)),Math.abs(ddf(b)));
+            case 4:
+                return Math.abs(df(b)); // const
+            case 5:
+                return Math.abs(df(a)); // const
+            default:
+                return 0;
+        }
+    }
+    public BreakPointKind getBreakPointKind(double a, double b) {
+        switch (functionNumber) {
+            case 1:
+                if ((a>0) == (b>0) && (a!=0) && (b!=0)){
+                    return BreakPointKind.CONTINUOUS;
+                }
+                return BreakPointKind.INFINITE;
+            case 2:
+                if ((a>0) == (b>0) && (a!=0) && (b!=0)){
+                    return BreakPointKind.CONTINUOUS;
+                }
+                return BreakPointKind.HOLE;
+            case 3:
+                return BreakPointKind.CONTINUOUS;
+            case 4:
+                return BreakPointKind.CONTINUOUS;
+            case 5:
+                return BreakPointKind.CONTINUOUS;
+            default:
+                return BreakPointKind.CONTINUOUS;
         }
     }
 
